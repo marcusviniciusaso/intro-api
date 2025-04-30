@@ -1,7 +1,15 @@
 from flask import Flask, jsonify, request
 from flask_httpauth import HTTPBasicAuth
+from flasgger import Swagger
 
 app = Flask(__name__)
+
+app.config['SWAGGER'] = {
+    'title': 'My Flask API',
+    'uiversion': 3
+}
+
+swagger = Swagger(app)
 
 auth = HTTPBasicAuth()
 
