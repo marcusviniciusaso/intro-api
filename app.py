@@ -1,6 +1,8 @@
+from bs4 import BeautifulSoup
 from flask import Flask, jsonify, request
 from flask_httpauth import HTTPBasicAuth
 from flasgger import Swagger
+import requests
 
 app = Flask(__name__)
 
@@ -23,15 +25,6 @@ users = {
 def verify_password(username, password):
     if username in users and users[username] == password:
         return username
-    
-def get_title(url):
-    try:
-        response = requests.get(url)
-        soup = BeautifulSoup(response.text, 'html.parser')
-        title = soup.title.string.strip()
-        return jsonify({"title": title})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
 
 @app.route('/')
 def home():
@@ -68,8 +61,14 @@ def delete_item(item_id):
         return jsonify(removed)
     return jsonify({"error", "Item not found"}), 404
 
-if __name__ == '__main__':
-    app.run(debug=True)
+def get_title(url):
+    try:
+        response = requests.get(url)
+        soup = BeautifulSoup(response.text, 'html.parser')
+        title = soup.title.string.strip()
+        return jsonify({"title": title})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/scrape/title', methods=['GET'])
 @auth.login_required
@@ -132,3 +131,6 @@ def scrape_content():
     if not url:
         return jsonify({"error": "URL is required"}), 400
     return get_content(url)
+
+if __name__ == '__main__':
+    app.run(debug=True)
